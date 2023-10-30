@@ -3,13 +3,21 @@ import PropTypes from "prop-types";
 import Button from "../../ui/Button";
 import { useDispatch } from "react-redux";
 import { addItem } from "../cart/cartSlice";
+import DeleteItem from "../cart/deleteItem";
 
 function MenuItem({ pizza }) {
   const { id, name, unitPrice, ingredients, soldOut, imageUrl } = pizza;
   const dispatch = useDispatch();
 
-  function handleAddToCart(pizza) {
-    dispatch(addItem(pizza));
+  function handleAddToCart() {
+    const cartItem = {
+      pizzaId: id,
+      name,
+      quantity: 1,
+      unitPrice,
+      totalPrice: 1 * unitPrice,
+    };
+    dispatch(addItem(cartItem));
   }
 
   return (
@@ -32,9 +40,14 @@ function MenuItem({ pizza }) {
               Sold out
             </p>
           )}
-          <Button type="small" onClick={() => handleAddToCart(pizza)}>
-            Add To Cart
-          </Button>
+          {!soldOut && (
+            <>
+              <Button type="small" onClick={handleAddToCart}>
+                Add To Cart
+              </Button>
+              <DeleteItem />
+            </>
+          )}
         </div>
       </div>
     </li>
