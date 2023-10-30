@@ -3,9 +3,10 @@ import { createOrder } from "../../services/apiRestaurant";
 import Button from "../../ui/Button";
 import { useSelector } from "react-redux";
 import { getUsername } from "../user/userSlice";
-import { clearCart, getCart } from "../cart/cartSlice";
+import { clearCart, getCart, getTotalCartPrice } from "../cart/cartSlice";
 import EmptyCart from "../cart/EmptyCart";
 import store from "../../store";
+import { useState } from "react";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -14,11 +15,14 @@ const isValidPhone = (str) =>
   );
 
 function CreateOrder() {
+  const [priority, setPriority] = useState(false);
   const cart = useSelector(getCart);
+  const totalCartPrice = useSelector(getTotalCartPrice);
   const navigation = useNavigation();
   const formError = useActionData();
   const isSubmitting = navigation.state === "submitting";
   const username = useSelector(getUsername);
+  const priorityPrice = priority ? totalCartPrice * 0.2 : 0;
 
   if (cart.length === 0) return <EmptyCart />;
 
@@ -62,6 +66,7 @@ function CreateOrder() {
             type="checkbox"
             name="priority"
             id="priority"
+            value={(e) => setPriority(e.target.value)}
           />
           <label htmlFor="priority" className="font-medium">
             Want to yo give your order priority?
@@ -72,7 +77,9 @@ function CreateOrder() {
 
         <div>
           <Button type="primary" disabled={isSubmitting}>
-            {isSubmitting ? "Placing Order" : "Order now"}
+            {isSubmitting
+              ? "Placing Order"
+              : `Order now for ${totalCartPrice + priorityPrice}`}
           </Button>
         </div>
       </Form>
@@ -87,7 +94,7 @@ export async function action({ request }) {
   const order = {
     ...data,
     cart: JSON.parse(data.cart),
-    priority: data.priority === "on",
+    priority: data.priority === "true",
   };
 
   const errors = {};
